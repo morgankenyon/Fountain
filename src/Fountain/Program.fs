@@ -28,6 +28,75 @@ type Message =
 
 module Views =
     open Giraffe.ViewEngine
+    open Giraffe.ViewEngine.Accessibility
+    // let header =
+
+    //     //home
+    //     //about
+    //     //posts
+    let _role = HtmlElements.attr "role"
+    let _dataTarget = HtmlElements.attr "data-target"
+
+    let navbar =
+        nav [ _class "navbar"; _role "navigation" ] [
+            div [ _class "navbar-brand" ] [
+                a [ _class "navbar-item"; _href "/" ] [
+                //<img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
+                    img [ _src "https://bulma.io/images/bulma-logo.png"; _width "112"; _height "28" ]
+                ]
+
+                a [ _class "navbar-burger"; _role "button"; _dataTarget "navbarBasicExample" ] [
+                    span [ _ariaHidden "true" ] [] //change this to loop at some point
+                    span [ _ariaHidden "true" ] []
+                    span [ _ariaHidden "true" ] []
+                ]
+            ]
+
+            div [ _class "navbar-menu"; _id "navbarBasicExample" ] [
+                div [ _class "navbar-start" ] [
+                    a [ _class "navbar-item"; _href "/" ] [
+                        str "Home"
+                    ]
+                    a [ _class "navbar-item"; _href "/about" ] [
+                        str "About"
+                    ]
+
+                    div [ _class "navbar-item has-dropdown is-hoverable" ] [
+                        a [ _class "navbar-link" ] [
+                            str "More"
+                        ]
+                        div [ _class "navbar-dropdown" ] [
+                            a [ _class "navbar-item" ] [
+                                str "Documentation"
+                            ]
+                            a [ _class "navbar-item" ] [
+                                str "Jobs"
+                            ]
+                            a [ _class "navbar-item" ] [
+                                str "Contact"
+                            ]
+                            hr [ _class "navbar-divider "]
+                            a [ _class "navbar-item" ] [
+                                str "Report an issue"
+                            ]
+                        ]
+                    ]
+                ]
+
+                div [ _class "navbar-end" ] [
+                    div [ _class "navbar-item" ] [
+                        div [ _class "buttons" ] [
+                            a [ _class "button is-primary" ] [
+                                str "Sign up"
+                            ]
+                            a [ _class "button is-light" ] [
+                                str "Log in"
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
 
     let layout (content: XmlNode list) =
         html [] [
@@ -35,9 +104,16 @@ module Views =
                 title []  [ encodedText "Fountain" ]
                 link [ _rel  "stylesheet"
                        _type "text/css"
+                       _href "/bulma.css" ]
+                link [ _rel  "stylesheet"
+                       _type "text/css"
                        _href "/main.css" ]
+                script [ _src "/menu.js"; _async ] []
             ]
-            body [] content
+            body [] [
+                navbar
+                div [ _class "container" ] content
+            ]
         ]
 
     let partial () =
@@ -61,23 +137,43 @@ module Views =
             p [] [ encodedText model.Text ]
         ] |> layout
 
+    let about () =
+        [
+            partial()
+            p [] [ encodedText "About page" ]
+        ] |> layout
+
     let newPage () =
-        form [ _action "/newpage"
-               _method "post" ] [
-            input [_name "route"] 
-            input [_name "page"] 
-            input [_type "submit"]
-        ]
+        [
+            form [ _action "/newpage"; _method "post" ] [
+                div [] [
+                    input [ _class "input"; _name "route"; _placeholder "Url Route" ] 
+                ]
+                div [] [
+                    textarea [ _class "textarea"; _name "page"; _placeholder "Markdown Content" ] []
+                ]
+                div [] [
+                    input [_type "submit"]
+                ]
+            ]   
+        ] |> layout
 
 // ---------------------------------
 // Web app
 // ---------------------------------
 
-let indexHandler (name : string) =
-    let greetings = sprintf "Hello %s, from Giraffe!" name
+type BasePageType =
+| About
+
+let indexHandler =
+    let greetings = sprintf "Hello %s, from Giraffe!" "johhny"
     let model     = { Text = greetings }
     let view      = Views.index model
     htmlView view
+
+let aboutHandler () =
+    Views.about()
+    |> htmlView
 
 let markdownHandler (path: string) =
     let potentialPage = Db.searchPage path
@@ -88,6 +184,11 @@ let markdownHandler (path: string) =
         htmlView view
     | None ->
         htmlView (Views.NotFound())
+
+let basePageHandler basePageType =
+    match basePageType with 
+    | About -> aboutHandler
+
 
 [<CLIMutable>]
 type NewPage =
@@ -119,9 +220,8 @@ let webApp =
         GET >=>
             choose [
                 route "/newpage" >=> newPageHandler()
-                routef "/hello/%s" indexHandler
                 routef "/%s" (fun s -> warbler (fun _ -> markdownHandler s))
-                route "/" >=> warbler (fun _ -> markdownHandler "")
+                route "/" >=> warbler (fun _ -> indexHandler)
             ]
         POST >=> 
             choose [

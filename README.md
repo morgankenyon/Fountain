@@ -1,31 +1,29 @@
 # Fountain
 
-A [Giraffe](https://github.com/giraffe-fsharp/Giraffe) web application, which has been created via the `dotnet new giraffe` command.
+A simple, markdown driven blogging website.
 
-## Build and test the application
+## Project Goals
 
-### Windows
+I love writting blogs in markdown. But sometimes I want the ability to post a new blog post without having to commit a new file, create a PR, babysit a CI job, etc.
 
-Run the `build.bat` script in order to restore, build and test (if you've selected to include tests) the application:
+So Fountain was created to allow the best of both worlds:
 
-```
-> ./build.bat
-```
+* Create new posts with markdown
+* Launch new posts without a commit -> redeploy cycle
 
-### Linux/macOS
+## Project State
 
-Run the `build.sh` script in order to restore, build and test (if you've selected to include tests) the application:
+This project is currently a POC. Lots of things to do before it's usable as intended:
 
-```
-$ ./build.sh
-```
+* Introduce more front matter to blog post
+* Implement a proper DB layer.
+* Implement auth to allow people to edit
+* Figure out how to generate the navbar
+* Figure out how to properly generate the footer
+* Implement some sort of testing framework
+* Figure out how to deploy
+* Figure out how upgrading versions might work?
 
-## Run the application
+## Known Issues
 
-After a successful build you can start the web application by executing the following command in your terminal:
-
-```
-dotnet run -p src/Fountain
-```
-
-After the application has started visit [http://localhost:5000](http://localhost:5000) in your preferred browser.
+* When trying to nest pages (Attempted page route is `test/tester`), something isn't working correctly.
