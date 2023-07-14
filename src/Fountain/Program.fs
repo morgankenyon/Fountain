@@ -22,6 +22,7 @@ type Message =
         Text : string
     }
 
+
 // ---------------------------------
 // Views
 // ---------------------------------
@@ -29,6 +30,21 @@ type Message =
 module Views =
     open Giraffe.ViewEngine
     open Giraffe.ViewEngine.Accessibility
+
+    
+    
+    type NavRoute =
+        {
+            DisplayName : string
+            Href : string
+        }
+
+        
+    let getRoutes () =
+        let navRoutes: NavRoute list = 
+            Db.getOnNavRoutes()
+            |> List.map (fun (rt: Db.RoutePage) -> { DisplayName = rt.title; Href = rt.route })
+        List.toArray navRoutes
     // let header =
 
     //     //home
@@ -37,7 +53,7 @@ module Views =
     let _role = HtmlElements.attr "role"
     let _dataTarget = HtmlElements.attr "data-target"
 
-    let navbar =
+    let navbar (routes: NavRoute[])=
         nav [ _class "navbar"; _role "navigation" ] [
             div [ _class "navbar-brand" ] [
                 a [ _class "navbar-item"; _href "/" ] [
@@ -57,30 +73,38 @@ module Views =
                     a [ _class "navbar-item"; _href "/" ] [
                         str "Home"
                     ]
-                    a [ _class "navbar-item"; _href "/about" ] [
-                        str "About"
-                    ]
 
-                    div [ _class "navbar-item has-dropdown is-hoverable" ] [
-                        a [ _class "navbar-link" ] [
-                            str "More"
+                    if routes.Length > 0 then
+                        let firstRoute = Array.head routes 
+                        a [ _class "navbar-item"; _href firstRoute.Href] [
+                            str firstRoute.DisplayName
                         ]
-                        div [ _class "navbar-dropdown" ] [
-                            a [ _class "navbar-item" ] [
-                                str "Documentation"
+
+                        if routes.Length > 1 then
+
+                            div [ _class "navbar-item has-dropdown is-hoverable" ] [
+                                a [ _class "navbar-link" ] [
+                                    str "More"
+                                ]
+                                div [ _class "navbar-dropdown" ] [
+
+                                    let rest = routes.[1..]
+
+                                    for rte in rest do
+                                        a [ _class "navbar-item"; _href rte.Href ] [
+                                            str rte.DisplayName
+                                        ]
+                                    hr [ _class "navbar-divider "]
+                                    a [ _class "navbar-item" ] [
+                                        str "Report an issue"
+                                    ]
+                                ]
                             ]
-                            a [ _class "navbar-item" ] [
-                                str "Jobs"
-                            ]
-                            a [ _class "navbar-item" ] [
-                                str "Contact"
-                            ]
-                            hr [ _class "navbar-divider "]
-                            a [ _class "navbar-item" ] [
-                                str "Report an issue"
-                            ]
-                        ]
-                    ]
+                        else
+                            div [] []
+                    else
+                        div [] []
+                   
                 ]
 
                 div [ _class "navbar-end" ] [
@@ -99,6 +123,7 @@ module Views =
         ]
 
     let layout (content: XmlNode list) =
+        let routes = getRoutes()
         html [] [
             head [] [
                 title []  [ encodedText "Fountain" ]
@@ -111,38 +136,66 @@ module Views =
                 script [ _src "/menu.js"; _async ] []
             ]
             body [] [
-                navbar
-                div [ _class "container" ] content
+                div [ _class "container" ] [
+                    
+                    div [] [
+                        navbar routes
+                    ]
+                    div [] content
+                ]
             ]
         ]
 
-    let partial () =
-        h1 [] [ encodedText "Fountain" ]
+    // let partial () =
+    //     h1 [] [ encodedText "Fountain" ]
 
     let markdown (content: string) =
         [
-            partial()
+            //partial()
             div [] [ rawText content ]
+        ] |> layout
+    
+    let printRoutes (routes : NavRoute list) =
+        [
+            div [] [
+                if routes.Length = 0 then
+                    p [] [ str "No routes currently" ]
+                else 
+                    for r in routes do
+                        div [] [
+                            p [] [ str r.DisplayName ]
+                            p [] [ str r.Href ]
+                        ]
+            ]
+
+            
         ] |> layout
 
     let NotFound () =
         [
-            partial()
+            //partial()
             div [] [ str "Could not find"]
         ] |> layout
 
     let index (model : Message) =
         [
-            partial()
+            //partial()
             p [] [ encodedText model.Text ]
         ] |> layout
 
     let about () =
         [
-            partial()
+            //partial()
             p [] [ encodedText "About page" ]
         ] |> layout
 
+(*
+    
+  <input type="radio" id="css" name="fav_language" value="CSS">
+  <label for="css">CSS</label><br>
+  <input type="radio" id="javascript" name="fav_language" value="JavaScript">
+  <label for="javascript">JavaScript</label>
+*)
     let newPage () =
         [
             form [ _action "/newpage"; _method "post" ] [
@@ -150,7 +203,16 @@ module Views =
                     input [ _class "input"; _name "route"; _placeholder "Url Route" ] 
                 ]
                 div [] [
+                    input [ _class "input"; _name "title"; _placeholder "Page Title" ] 
+                ]
+                div [] [
                     textarea [ _class "textarea"; _name "page"; _placeholder "Markdown Content" ] []
+                ]
+                div [] [
+                    input [ _name "onNav"; _type "radio"; _value "true" ]
+                    label [ _for "true" ] [ str "Yes" ]
+                    input [ _name "onNav"; _type "radio"; _value "false" ]
+                    label [ _for "false" ] [ str "No" ]
                 ]
                 div [] [
                     input [_type "submit"]
@@ -161,9 +223,6 @@ module Views =
 // ---------------------------------
 // Web app
 // ---------------------------------
-
-type BasePageType =
-| About
 
 let indexHandler =
     let greetings = sprintf "Hello %s, from Giraffe!" "johhny"
@@ -185,32 +244,47 @@ let markdownHandler (path: string) =
     | None ->
         htmlView (Views.NotFound())
 
-let basePageHandler basePageType =
-    match basePageType with 
-    | About -> aboutHandler
-
-
 [<CLIMutable>]
 type NewPage =
     {
         route   : string
+        title   : string
         page   : string
+        onNav  : bool
     }
+
 
 let newPageHandler () =
     htmlView (Views.newPage())
+
+let allRoutesHandler () =
+    let routes : Views.NavRoute list = 
+        Db.pages
+        |> List.map (fun route -> { DisplayName = route.title; Href = route.route })
+    
+    htmlView (Views.printRoutes routes)
+
+let toRoutePage (np: NewPage) markdown : Db.RoutePage =
+    let lowerRoute = np.route.ToLower()
+    { route = lowerRoute; title = np.title; page = markdown; onNav = np.onNav }
 
 let submitNewPageHandler : HttpHandler =
     fun (next : HttpFunc) (ctx : HttpContext) ->
         task {
             // Binds a form payload to a Car object
-            let! np = ctx.BindFormAsync<NewPage>()
+            let! npResult = ctx.TryBindFormAsync<NewPage>()
 
-            np.page
-            |> Markdown.ToHtml
-            |> Db.newPage np.route
+            match npResult with 
+            | Ok np ->
 
-            return! Successful.OK np next ctx
+                np.page
+                |> Markdown.ToHtml
+                |> toRoutePage np
+                |> Db.newPage
+
+                return! Successful.OK np next ctx
+            | Error err ->
+                return! RequestErrors.BAD_REQUEST err next ctx 
         }
 
 
@@ -220,6 +294,7 @@ let webApp =
         GET >=>
             choose [
                 route "/newpage" >=> newPageHandler()
+                route "/allroutes" >=> allRoutesHandler()
                 routef "/%s" (fun s -> warbler (fun _ -> markdownHandler s))
                 route "/" >=> warbler (fun _ -> indexHandler)
             ]

@@ -1,5 +1,5 @@
 module Db 
-    type RoutePage = { route: string; page: string} 
+    type RoutePage = { route: string; title: string; page: string; onNav: bool } 
 
     let mutable pages = List.empty<RoutePage>
 
@@ -9,9 +9,12 @@ module Db
     let searchPage (route: string) =
         pages 
             |> List.tryFind (pageSearch route)
+
+    let getOnNavRoutes () =
+        pages
+        |> List.filter (fun r -> r.onNav)
     
-    let newPage route page =
-        let newRoutePage = { route = route; page = page }
-        pages <- newRoutePage :: pages
+    let newPage np =
+        pages <- np :: pages
 
 
