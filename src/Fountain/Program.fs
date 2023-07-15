@@ -224,7 +224,7 @@ module Views =
 // Web app
 // ---------------------------------
 
-let indexHandler =
+let indexHandler () =
     let greetings = sprintf "Hello %s, from Giraffe!" "johhny"
     let model     = { Text = greetings }
     let view      = Views.index model
@@ -294,9 +294,9 @@ let webApp =
         GET >=>
             choose [
                 route "/newpage" >=> newPageHandler()
-                route "/allroutes" >=> allRoutesHandler()
+                route "/allroutes" >=> warbler (fun _ -> allRoutesHandler())
                 routef "/%s" (fun s -> warbler (fun _ -> markdownHandler s))
-                route "/" >=> warbler (fun _ -> indexHandler)
+                route "/" >=> warbler (fun _ -> indexHandler())
             ]
         POST >=> 
             choose [
@@ -319,8 +319,8 @@ let errorHandler (ex : Exception) (logger : ILogger) =
 let configureCors (builder : CorsPolicyBuilder) =
     builder
         .WithOrigins(
-            "http://localhost:5000",
-            "https://localhost:5001")
+            "http://localhost:5000")
+            //"https://localhost:5001")
        .AllowAnyMethod()
        .AllowAnyHeader()
        |> ignore
