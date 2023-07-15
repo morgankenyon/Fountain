@@ -53,73 +53,47 @@ module Views =
     let _role = HtmlElements.attr "role"
     let _dataTarget = HtmlElements.attr "data-target"
 
-    let navbar (routes: NavRoute[])=
-        nav [ _class "navbar"; _role "navigation" ] [
-            div [ _class "navbar-brand" ] [
-                a [ _class "navbar-item"; _href "/" ] [
-                //<img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
-                    img [ _src "https://bulma.io/images/bulma-logo.png"; _width "112"; _height "28" ]
-                ]
-
-                a [ _class "navbar-burger"; _role "button"; _dataTarget "navbarBasicExample" ] [
-                    span [ _ariaHidden "true" ] [] //change this to loop at some point
-                    span [ _ariaHidden "true" ] []
-                    span [ _ariaHidden "true" ] []
-                ]
-            ]
-
-            div [ _class "navbar-menu"; _id "navbarBasicExample" ] [
-                div [ _class "navbar-start" ] [
-                    a [ _class "navbar-item"; _href "/" ] [
-                        str "Home"
-                    ]
-
-                    if routes.Length > 0 then
-                        let firstRoute = Array.head routes 
-                        a [ _class "navbar-item"; _href firstRoute.Href] [
-                            str firstRoute.DisplayName
+    let navSection (routes: NavRoute[]) =
+        let routes = getRoutes()
+        header [] [
+            nav [] [
+                ul [] [
+                    li [] [
+                        a [ _href "/" ] [
+                            str "Home"
                         ]
-
-                        if routes.Length > 1 then
-
-                            div [ _class "navbar-item has-dropdown is-hoverable" ] [
-                                a [ _class "navbar-link" ] [
-                                    str "More"
+                    ]
+                    for rte in routes do                         
+                        li [] [
+                            a [ _href rte.Href ] [
+                                str rte.DisplayName
+                            ]
+                        ]
+                         
+                    li [] [
+                        a [ _href "#" ] [ str "Misc" ]
+                        ul [] [
+                            li [] [
+                                a [ _href "/newpage" ] [
+                                    str "New Page"
                                 ]
-                                div [ _class "navbar-dropdown" ] [
-
-                                    let rest = routes.[1..]
-
-                                    for rte in rest do
-                                        a [ _class "navbar-item"; _href rte.Href ] [
-                                            str rte.DisplayName
-                                        ]
-                                    hr [ _class "navbar-divider "]
-                                    a [ _class "navbar-item" ] [
-                                        str "Report an issue"
-                                    ]
+                            ]                                          
+                            li [] [
+                                a [ _href "/allroutes" ] [
+                                    str "All Routes"
                                 ]
                             ]
-                        else
-                            div [] []
-                    else
-                        div [] []
-                   
-                ]
-
-                div [ _class "navbar-end" ] [
-                    div [ _class "navbar-item" ] [
-                        div [ _class "buttons" ] [
-                            a [ _class "button is-primary" ] [
-                                str "Sign up"
-                            ]
-                            a [ _class "button is-light" ] [
-                                str "Log in"
-                            ]
+                        
                         ]
                     ]
                 ]
             ]
+        ]
+
+
+    let footerSection () =
+        footer [] [
+            p [] [ str "<Sample Footer>" ]
         ]
 
     let layout (content: XmlNode list) =
@@ -129,20 +103,16 @@ module Views =
                 title []  [ encodedText "Fountain" ]
                 link [ _rel  "stylesheet"
                        _type "text/css"
-                       _href "/bulma.css" ]
+                       _href "/mvp.css" ]
                 link [ _rel  "stylesheet"
                        _type "text/css"
                        _href "/main.css" ]
-                script [ _src "/menu.js"; _async ] []
+                //script [ _src "/menu.js"; _async ] []
             ]
-            body [] [
-                div [ _class "container" ] [
-                    
-                    div [] [
-                        navbar routes
-                    ]
-                    div [] content
-                ]
+            body [] [  
+                navSection routes
+                main [] content
+                footerSection()
             ]
         ]
 
@@ -173,19 +143,24 @@ module Views =
 
     let NotFound () =
         [
-            //partial()
             div [] [ str "Could not find"]
         ] |> layout
 
-    let index (model : Message) =
+    let index () =
         [
-            //partial()
-            p [] [ encodedText model.Text ]
+            h1 [] [ str "Welcome to Fountain" ]
+            div [] [
+                p [] [ str "What is fountain?" ]
+                p [] [ str "Fountain is a markdown driven blogging framework. The main difference between Fountain and other markdown driven frameworks is lack of staticness. 
+                Whereas static site generators (like Hugo, Jekyll, etc) generate valid html on a git commit, and need a deployment. Fountain is more like wordpress.
+                There's a UI that allows you to create new pages, and that information isn't stored in flat files, but in a DB."]
+                p [] [ str "So that means you can deploy a new post without making a git commit and needing a deployment to run."]
+                p [] [ str "This project is still in alpha phase. So a lot of work to do before it's ready to run in production."]
+            ]
         ] |> layout
 
     let about () =
         [
-            //partial()
             p [] [ encodedText "About page" ]
         ] |> layout
 
@@ -198,6 +173,9 @@ module Views =
 *)
     let newPage () =
         [
+            h1 [] [
+                str "New Page"
+            ]
             form [ _action "/newpage"; _method "post" ] [
                 div [] [
                     input [ _class "input"; _name "route"; _placeholder "Url Route" ] 
@@ -225,9 +203,7 @@ module Views =
 // ---------------------------------
 
 let indexHandler () =
-    let greetings = sprintf "Hello %s, from Giraffe!" "johhny"
-    let model     = { Text = greetings }
-    let view      = Views.index model
+    let view      = Views.index()
     htmlView view
 
 let aboutHandler () =
@@ -293,7 +269,7 @@ let webApp =
     choose [
         GET >=>
             choose [
-                route "/newpage" >=> newPageHandler()
+                route "/newpage" >=> warbler (fun _ -> newPageHandler())
                 route "/allroutes" >=> warbler (fun _ -> allRoutesHandler())
                 routef "/%s" (fun s -> warbler (fun _ -> markdownHandler s))
                 route "/" >=> warbler (fun _ -> indexHandler())
