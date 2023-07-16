@@ -12,11 +12,13 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fountain.Tests", "tests\Fountain.Tests\Fountain.Tests.fsproj", "{DB284F96-3FC7-49A0-8667-18732B962F3E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_root", "_root", "{625E3CAC-600B-450D-BF54-E3059450591A}"
-ProjectSection(SolutionItems) = preProject
-	build.bat = build.bat
-	build.sh = build.sh
-	README.md = README.md
-EndProjectSection
+	ProjectSection(SolutionItems) = preProject
+		build.bat = build.bat
+		build.sh = build.sh
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fountain.Migrations", "src\Fountain.Migrations\Fountain.Migrations.fsproj", "{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C56E75B2-5671-46E1-8594-6529135E7082} = {B8CB57F5-C87C-48A1-A3DC-BF5BBA95EB25}
 		{DB284F96-3FC7-49A0-8667-18732B962F3E} = {E6D01694-CB7C-4226-99EE-103B75B923FB}
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D} = {B8CB57F5-C87C-48A1-A3DC-BF5BBA95EB25}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{C56E75B2-5671-46E1-8594-6529135E7082}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -59,5 +62,17 @@ Global
 		{DB284F96-3FC7-49A0-8667-18732B962F3E}.Release|x64.Build.0 = Release|Any CPU
 		{DB284F96-3FC7-49A0-8667-18732B962F3E}.Release|x86.ActiveCfg = Release|Any CPU
 		{DB284F96-3FC7-49A0-8667-18732B962F3E}.Release|x86.Build.0 = Release|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Debug|x64.Build.0 = Debug|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Debug|x86.Build.0 = Debug|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Release|x64.ActiveCfg = Release|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Release|x64.Build.0 = Release|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Release|x86.ActiveCfg = Release|Any CPU
+		{82B6C734-DBED-4615-B6AD-D48ED39A4B4D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

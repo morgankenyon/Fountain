@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+	  <PackAsTool>true</PackAsTool>
+	  <ToolCommandName>fount</ToolCommandName>
+	  <PackageOutputPath>./bin/nupkg</PackageOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" />
+    <Compile Include="Tool.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup />
+
+  <ItemGroup>
+    <PackageReference Include="Argu" Version="6.1.1" />
+    <PackageReference Include="Npgsql.FSharp" Version="5.7.0" />
+  </ItemGroup>
+
+</Project>
